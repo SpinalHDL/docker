@@ -1,0 +1,17 @@
+os: linux
+services: docker
+language: minimal
+install: skip
+addons:
+  apt:
+    packages:
+    - docker-ce
+    - pass
+script: ./travis.sh -b
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: ./travis.sh -d
+  on:
+    repo: 1138-4EB/SpinalHDL-docker
+    branch: master
