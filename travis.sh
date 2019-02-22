@@ -52,25 +52,20 @@ getDockerCredentialPass () {
   PASS_URL="$(curl -s https://api.github.com/repos/docker/docker-credential-helpers/releases/latest \
     | grep "browser_download_url.*pass-.*-amd64" \
     | cut -d : -f 2,3 \
-    | tr -d \")"
-  PASS_URL="$(echo $PASS_URL | cut -c2-)"
+    | tr -d \" \
+    | cut -c2- )"
 
-  if [ "$(echo "$PASS_URL" | cut -c1-5)" != "https" ]; then
-    PASS_URL="https://github.com/docker/docker-credential-helpers/releases/download/v0.6.0/docker-credential-pass-v0.6.0-amd64.tar.gz"
-  fi
+  [ "$(echo "$PASS_URL" | cut -c1-5)" != "https" ] && PASS_URL="https://github.com/docker/docker-credential-helpers/releases/download/v0.6.0/docker-credential-pass-v0.6.0-amd64.tar.gz"
 
   echo "PASS_URL: $PASS_URL"
-
   curl -fsSL "$PASS_URL" | tar xv
-
   chmod + $(pwd)/docker-credential-pass
 }
 
 #---
 
 dockerLogin () {
-  if [ "$CI" = "true" ]; then
-    gpg --batch --gen-key <<-EOF
+  [ "$CI" = "true" ] && gpg --batch --gen-key <<-EOF ; pass init $(gpg --no-auto-check-trustdb --list-secret-keys | grep ^sec | cut -d/ -f2 | cut -d" " -f1)
 %echo Generating a standard key
 Key-Type: DSA
 Key-Length: 1024
@@ -83,12 +78,7 @@ Expire-Date: 0
 %commit
 %echo done
 EOF
-
-    key=$(gpg --no-auto-check-trustdb --list-secret-keys | grep ^sec | cut -d/ -f2 | cut -d" " -f1)
-    pass init $key
-
-    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-  fi
+  echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 }
 
 #---
