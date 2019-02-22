@@ -5,7 +5,7 @@
 This repository contains utilities and sources to build docker images used in the [SpinalHDL GitHub organization](https://github.com/SpinalHDL).
 All of them are periodically built at [travis-ci.com/spinalhdl](https://travis-ci.com/spinalhdl) and pushed to [hub.docker.com/u/spinalhdl](https://hub.docker.com/u/spinalhdl/):
 
-- [![spinalhdl/dev pulls](https://img.shields.io/docker/pulls/spinalhdl/dev.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/dev)](https://hub.docker.com/r/spinalhdl/dev/) images with development depedendencies for [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL).
+- [![spinalhdl/dev pulls](https://img.shields.io/docker/pulls/spinalhdl/dev.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/dev) ![spinalhdl/dev size](https://img.shields.io/microbadger/image-size/spinalhdl/dev/latest.svg?label=&logo=docker&logoColor=white&style=flat-square)](https://hub.docker.com/r/spinalhdl/dev/) images with development depedendencies for [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL).
   - `latest`:
   - `ide`:
 
@@ -13,9 +13,9 @@ Other images based on these are:
 
 - Generated in [SpinalHDL/SpinalHDL](https://github.com/SpinalHDL/SpinalHDL):
 
-[![spinalhdl/spinalhdl pulls](https://img.shields.io/docker/pulls/spinalhdl/spinalhdl.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/spinalhdl)](https://hub.docker.com/r/spinalhdl/spinalhdl/) images with ready-to-use releases of [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL), along with...
+[![spinalhdl/spinalhdl pulls](https://img.shields.io/docker/pulls/spinalhdl/spinalhdl.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/spinalhdl) ![spinalhdl/spinalhdl size](https://img.shields.io/microbadger/image-size/spinalhdl/spinalhdl/latest.svg?label=%20&logo=docker&logoColor=white&style=flat-square)](https://hub.docker.com/r/spinalhdl/spinalhdl/) images with ready-to-use releases of [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL), along with...
 
-[![spinalhdl/riscv pulls](https://img.shields.io/docker/pulls/spinalhdl/riscv.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/riscv)](https://hub.docker.com/r/spinalhdl/riscv/) images with ready-to-use releases of [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL), along with all the dependencies (including the software toolchain for RISCV).
+[![spinalhdl/riscv pulls](https://img.shields.io/docker/pulls/spinalhdl/riscv.svg?style=flat-square&logo=docker&logoColor=00acd3&label=spinalhdl/riscv) ![spinalhdl/riscv size](https://img.shields.io/microbadger/image-size/spinalhdl/riscv/latest.svg?label=%20&logo=docker&logoColor=white&style=flat-square)](https://hub.docker.com/r/spinalhdl/riscv/) images with ready-to-use releases of [SpinalHDL](https://github.com/SpinalHDL/SpinalHDL), along with all the dependencies (including the software toolchain for RISCV).
 
 ---
 
