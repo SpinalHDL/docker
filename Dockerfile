@@ -32,15 +32,17 @@ RUN apt install -y --no-install-recommends \
       readline-common \
       zlib1g-dev
 
+
   # Build GHDL
 RUN git clone https://github.com/ghdl/ghdl && cd ghdl \
- && git reset --hard "50da90f509aa6de2961f1795af0be2452bc2c6d9" \
- && ./dist/travis/build.sh -b llvm-6.0 -p ghdl-llvm \
+ && git reset --hard "0c05fa85d3695fc82336e2712ae223170c310cc1" \
+ && ./dist/ci-run.sh -b llvm-6.0 -p ghdl-llvm build \
  && mv ghdl-llvm.tgz /tmp \
  && cd ..
 
   # Build Verilator
-RUN git clone http://git.veripool.org/git/verilator --branch verilator_4_008 && cd verilator \
+RUN git clone http://git.veripool.org/git/verilator && cd verilator \
+ && git checkout v4.008 \
  && unset VERILATOR_ROOT \
  && autoconf \
  && ./configure --prefix="/usr/local/"\
@@ -73,6 +75,7 @@ RUN apt install -y --no-install-recommends \
       python-dev \
       swig \
       zlib1g-dev \
+      libboost-dev \
   && apt autoclean && apt clean && apt -y autoremove
 
 COPY --from=build /tmp/ghdl-llvm.tgz /tmp/ghdl.tgz
