@@ -35,7 +35,7 @@ RUN apt install -y --no-install-recommends \
 
   # Build GHDL
 RUN git clone https://github.com/ghdl/ghdl && cd ghdl \
- && git reset --hard "0c05fa85d3695fc82336e2712ae223170c310cc1" \
+ && git reset --hard "a4e7fd3e6286b24350d9c4a782cdba15cb081a9c" \
  && ./dist/ci-run.sh -b llvm-6.0 -p ghdl-llvm build \
  && mv ghdl-llvm.tgz /tmp \
  && cd ..
