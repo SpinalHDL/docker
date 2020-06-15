@@ -1,4 +1,4 @@
-ARG IMAGE="ubuntu:xenial"
+ARG IMAGE="ubuntu:focal"
 
 FROM $IMAGE AS common
 
@@ -22,27 +22,27 @@ FROM common AS build
 RUN apt install -y --no-install-recommends \
       autoconf \
       bison \
-      clang-6.0 \
-      flex \
+      clang \
+      flex libfl-dev \
       g++ \
       gcc \
-      gnat-5 \
+      gnat-9 \
       gperf \
-      llvm-6.0-dev \
+      llvm-dev \
       readline-common \
       zlib1g-dev
 
 
   # Build GHDL
 RUN git clone https://github.com/ghdl/ghdl && cd ghdl \
- && git reset --hard "a4e7fd3e6286b24350d9c4a782cdba15cb081a9c" \
- && ./dist/ci-run.sh -b llvm-6.0 -p ghdl-llvm build \
+ && git reset --hard "0316f95368837dc163173e7ca52f37ecd8d3591d" \
+ && ./dist/ci-run.sh -b llvm -p ghdl-llvm build \
  && mv ghdl-llvm.tgz /tmp \
  && cd ..
 
   # Build Verilator
 RUN git clone http://git.veripool.org/git/verilator && cd verilator \
- && git checkout v4.008 \
+ && git checkout v4.028 \
  && unset VERILATOR_ROOT \
  && autoconf \
  && ./configure --prefix="/usr/local/"\
@@ -52,7 +52,7 @@ RUN git clone http://git.veripool.org/git/verilator && cd verilator \
  && cd ..
 
   # Build iverilog
-RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_2 && cd iverilog \
+RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_3 && cd iverilog \
  && autoconf \
  && ./configure \
  && make -j$(nproc) \
@@ -68,11 +68,10 @@ RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_2 &
 FROM common AS deps
 
 RUN apt install -y --no-install-recommends \
-      libgnat-5 \
+      libgnat-9 \
       python3 \
       python3-pip \
-      python \
-      python-dev \
+      python3-dev \
       swig \
       zlib1g-dev \
       libboost-dev \
