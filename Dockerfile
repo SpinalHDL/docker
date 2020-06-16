@@ -69,6 +69,7 @@ FROM common AS deps
 
 RUN apt install -y --no-install-recommends \
       libgnat-9 \
+      python-is-python3 \
       python3 \
       python3-pip \
       python3-dev \
