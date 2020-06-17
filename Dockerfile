@@ -88,12 +88,9 @@ RUN tar -xzf /tmp/ghdl.tgz -C /usr/local \
 RUN git clone --recurse-submodule https://github.com/vunit/vunit /opt/vunit \
  && pip3 install -r /opt/vunit/requirements.txt
 
-RUN git clone https://github.com/potentialventures/cocotb /opt/cocotb \
-  && cd /opt/cocotb \
-  && git reset --hard 5061fa04e09c79144633ad202b6ebc4b965e468a
+RUN pip3 install cocotb
 
 ENV PYTHONPATH=/opt/vunit
-ENV COCOTB=/opt/cocotb
 
 #
 # Add scala
