@@ -90,7 +90,7 @@ RUN git clone --recurse-submodule https://github.com/vunit/vunit /opt/vunit \
 
 RUN git clone https://github.com/potentialventures/cocotb /opt/cocotb \
   && cd /opt/cocotb \
-  && git reset --hard a463cee498346cb26fc215ced25c088039490665
+  && git reset --hard 5061fa04e09c79144633ad202b6ebc4b965e468a
 
 ENV PYTHONPATH=/opt/vunit
 ENV COCOTB=/opt/cocotb
@@ -110,6 +110,7 @@ RUN apt update -qq && apt install -y --no-install-recommends \
  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
  && apt update -qq && apt install -y --no-install-recommends \
    g++ \
+   llvm llvm-10 \
    sbt \
    scala \
  && apt autoclean && apt clean && apt -y autoremove
