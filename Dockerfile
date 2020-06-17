@@ -113,11 +113,11 @@ RUN apt update -qq && apt install -y --no-install-recommends \
  && apt autoclean && apt clean && apt -y autoremove
 
 #
-# opnjdk-8
+# opnjdk-11
 #
 
 FROM base
 
 RUN apt update -qq && apt install -y --no-install-recommends \
-      openjdk-8-jdk \
+      openjdk-11-jdk \
   && apt autoclean && apt clean && apt -y autoremove
