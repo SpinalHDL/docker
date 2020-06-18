@@ -113,7 +113,7 @@ RUN apt update -qq && apt install -y --no-install-recommends \
    scala \
  && apt autoclean && apt clean && apt -y autoremove
 
-RUN curl -L https://github.com/lihaoyi/mill/releases/download/0.7.3/0.7.3 > /usr/local/bin/mill && sudo chmod +x /usr/local/bin/mill
+RUN curl -L https://github.com/lihaoyi/mill/releases/download/0.7.3/0.7.3 > /usr/local/bin/mill && chmod +x /usr/local/bin/mill
 
 #
 # opnjdk-11
