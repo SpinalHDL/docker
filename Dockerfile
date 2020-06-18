@@ -1,4 +1,4 @@
-ARG IMAGE="ubuntu:xenial"
+ARG IMAGE="ubuntu:focal"
 
 FROM $IMAGE AS common
 
@@ -22,27 +22,27 @@ FROM common AS build
 RUN apt install -y --no-install-recommends \
       autoconf \
       bison \
-      clang-6.0 \
-      flex \
+      clang \
+      flex libfl-dev \
       g++ \
       gcc \
-      gnat-5 \
+      gnat-9 \
       gperf \
-      llvm-6.0-dev \
+      llvm-dev \
       readline-common \
       zlib1g-dev
 
 
   # Build GHDL
 RUN git clone https://github.com/ghdl/ghdl && cd ghdl \
- && git reset --hard "a4e7fd3e6286b24350d9c4a782cdba15cb081a9c" \
- && ./dist/ci-run.sh -b llvm-6.0 -p ghdl-llvm build \
+ && git reset --hard "0316f95368837dc163173e7ca52f37ecd8d3591d" \
+ && ./dist/ci-run.sh -b llvm -p ghdl-llvm build \
  && mv ghdl-llvm.tgz /tmp \
  && cd ..
 
   # Build Verilator
 RUN git clone http://git.veripool.org/git/verilator && cd verilator \
- && git checkout v4.008 \
+ && git checkout v4.028 \
  && unset VERILATOR_ROOT \
  && autoconf \
  && ./configure --prefix="/usr/local/"\
@@ -52,7 +52,7 @@ RUN git clone http://git.veripool.org/git/verilator && cd verilator \
  && cd ..
 
   # Build iverilog
-RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_2 && cd iverilog \
+RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_3 && cd iverilog \
  && autoconf \
  && ./configure \
  && make -j$(nproc) \
@@ -68,11 +68,11 @@ RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_2 &
 FROM common AS deps
 
 RUN apt install -y --no-install-recommends \
-      libgnat-5 \
+      libgnat-9 \
+      python-is-python3 \
       python3 \
       python3-pip \
-      python \
-      python-dev \
+      python3-dev \
       swig \
       zlib1g-dev \
       libboost-dev \
@@ -88,12 +88,9 @@ RUN tar -xzf /tmp/ghdl.tgz -C /usr/local \
 RUN git clone --recurse-submodule https://github.com/vunit/vunit /opt/vunit \
  && pip3 install -r /opt/vunit/requirements.txt
 
-RUN git clone https://github.com/potentialventures/cocotb /opt/cocotb \
-  && cd /opt/cocotb \
-  && git reset --hard a463cee498346cb26fc215ced25c088039490665
+RUN pip3 install cocotb
 
 ENV PYTHONPATH=/opt/vunit
-ENV COCOTB=/opt/cocotb
 
 #
 # Add scala
@@ -110,16 +107,17 @@ RUN apt update -qq && apt install -y --no-install-recommends \
  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
  && apt update -qq && apt install -y --no-install-recommends \
    g++ \
+   llvm llvm-10 \
    sbt \
    scala \
  && apt autoclean && apt clean && apt -y autoremove
 
 #
-# opnjdk-8
+# opnjdk-11
 #
 
 FROM base
 
 RUN apt update -qq && apt install -y --no-install-recommends \
-      openjdk-8-jdk \
+      openjdk-11-jdk \
   && apt autoclean && apt clean && apt -y autoremove
