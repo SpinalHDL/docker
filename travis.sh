@@ -95,6 +95,7 @@ build () {
 #---
 
 deploy () {
+  export GPG_TTY=$(tty)
   getDockerCredentialPass
   dockerLogin
   docker push spinalhdl/dev
