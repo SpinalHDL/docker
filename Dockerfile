@@ -1,126 +1,110 @@
-ARG IMAGE="ubuntu:focal"
-
-FROM $IMAGE AS common
-
-WORKDIR /work
-
-RUN apt update -qq && apt upgrade -y && apt install -y --no-install-recommends \
-      apt-utils \
-      apt-transport-https \
-      ca-certificates \
-      git \
-      make \
-  && apt update -qq && apt autoclean && apt clean && apt -y autoremove \
-  && update-ca-certificates
-
+# Copyright 2023 by the SpinalHDL Docker contributors
+# SPDX-License-Identifier: GPL-3.0-only
 #
-# Temporal image to build deps
-#
+# Author(s): Pavel Benacek <pavel.benacek@gmail.com>
 
-FROM common AS build
+ARG UBUNTU_VERSION=22.04
+FROM ubuntu:$UBUNTU_VERSION AS base
 
-RUN apt install -y --no-install-recommends \
-      autoconf \
-      bison \
-      clang \
-      flex libfl-dev \
-      g++ \
-      gcc \
-      gnat-9 \
-      gperf \
-      llvm-dev \
-      readline-common \
-      zlib1g-dev
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH="$PATH:/opt/bin"
 
+ARG COURSIER_CACHE_DEFAULT="/sbt/.cache/coursier/v1"
+ARG SBT_OPTS_DEFAULT="-Dsbt.override.build.repos=true -Dsbt.boot.directory=/sbt/.sbt/boot -Dsbt.global.base=/sbt/.sbt -Dsbt.ivy.home=/sbt/.ivy2 -Duser.home=/sbt -Dsbt.global.localcache=/sbt/.sbt/cache"
+ENV COURSIER_CACHE=$COURSIER_CACHE_DEFAULT
+ENV SBT_OPTS=$SBT_OPTS_DEFAULT
 
-  # Build GHDL
-RUN git clone https://github.com/ghdl/ghdl && cd ghdl \
- && git reset --hard "0316f95368837dc163173e7ca52f37ecd8d3591d" \
- && ./dist/ci-run.sh -b llvm -p ghdl-llvm build \
- && mv ghdl-llvm.tgz /tmp \
- && cd ..
+ARG DEPS_RUNTIME="ca-certificates gnupg2 openjdk-17-jdk-headless ccache curl g++ gcc git libtcl8.6 python3 python3-pip python3-pip-whl libpython3-dev ssh locales make ghdl iverilog libboost1.74-dev"
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends $DEPS_RUNTIME
 
-  # Build Verilator
-RUN git clone http://git.veripool.org/git/verilator && cd verilator \
- && git checkout v4.028 \
- && unset VERILATOR_ROOT \
- && autoconf \
- && ./configure --prefix="/usr/local/"\
- && make -j$(nproc) \
- && make install DESTDIR="$(pwd)/install-verilator" \
- && mv install-verilator/usr/local /tmp/verilator \
- && cd ..
+FROM base AS build-symbiyosys
 
-  # Build iverilog
-RUN git clone https://github.com/steveicarus/iverilog --depth=1 --branch v10_3 && cd iverilog \
- && autoconf \
- && ./configure \
- && make -j$(nproc) \
- && make install DESTDIR="$(pwd)/install-iverilog" \
- && mv install-iverilog/usr/local /tmp/iverilog \
- && ls -la /tmp/iverilog \
- && cd ..
+ENV PREFIX=/opt
+ARG DEPS_YOSYS="autoconf build-essential clang libffi-dev libreadline-dev pkg-config tcl-dev unzip flex bison"
+RUN apt-get install -y --no-install-recommends $DEPS_YOSYS
 
-#
-# Add deps to base image: GHDL, Verilator, iverilog, VUnit and cocotb
-#
+ARG YOSYS_VERSION="yosys-0.28"
+RUN git clone https://github.com/YosysHQ/yosys.git yosys && \
+    cd yosys && \
+    git checkout $YOSYS_VERSION && \
+    make PREFIX=$PREFIX -j$(nproc) && \
+    make PREFIX=$PREFIX install && \
+    cd .. && \
+    rm -Rf yosys
 
-FROM common AS deps
+ARG SOLVERS_PATH="snapshot-20221212/ubuntu-22.04-bin.zip"
+RUN mkdir solver && cd solver && \
+    curl -o solvers.zip -sL "https://github.com/GaloisInc/what4-solvers/releases/download/${SOLVERS_PATH}" && \
+    unzip solvers.zip && \
+    rm solvers.zip && \
+    chmod +x * && \
+    cp cvc4 $PREFIX/bin/cvc4 && \
+    cp cvc5 $PREFIX/bin/cvc5 && \
+    cp z3 $PREFIX/bin/z3 && \
+    cp yices $PREFIX/bin/yices && \
+    cp yices-smt2 $PREFIX/bin/yices-smt2 && \
+    cd .. && rm -rf solver
 
-RUN apt install -y --no-install-recommends \
-      libgnat-9 \
-      python-is-python3 \
-      python3 \
-      python3-pip \
-      python3-dev \
-      swig \
-      zlib1g-dev \
-      libboost-dev \
-  && apt autoclean && apt clean && apt -y autoremove
+ARG SYMBIYOSYS_VERSION="yosys-0.28"
+RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
+    cd SymbiYosys && \
+    git checkout $SYMBIYOSYS_VERSION && \
+    make PREFIX=$PREFIX -j$(nproc) install && \
+    cd .. && \
+    rm -Rf SymbiYosys
 
-COPY --from=build /tmp/ghdl-llvm.tgz /tmp/ghdl.tgz
-COPY --from=build /tmp/verilator/ /usr/local/
-COPY --from=build /tmp/iverilog/ /usr/local/
+FROM base AS build-verilator
 
-RUN tar -xzf /tmp/ghdl.tgz -C /usr/local \
- && rm -f /tmp/*
+ENV PREFIX=/opt
+ARG DEPS_VERILATOR="perl make autoconf g++ flex bison ccache libgoogle-perftools-dev numactl perl-doc libfl2 libfl-dev zlib1g zlib1g-dev"
+RUN apt-get install -y --no-install-recommends $DEPS_VERILATOR
 
-RUN git clone --recurse-submodule https://github.com/vunit/vunit /opt/vunit \
- && pip3 install -r /opt/vunit/requirements.txt
+ARG VERILATOR_VERSION="v4.228"
+RUN git clone https://github.com/verilator/verilator verilator && \
+    cd verilator && \
+    git checkout $VERILATOR_VERSION && \
+    autoconf && \
+    ./configure --prefix $PREFIX && \
+    make PREFIX=$PREFIX -j$(nproc) && \
+    make PREFIX=$PREFIX install && \
+    cd ../.. && \
+    rm -Rf verilator
 
-RUN pip3 install cocotb
+FROM base AS build-spinal
 
-ENV PYTHONPATH=/opt/vunit
+# # Add repos and install sbt 
+# RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" \
+#         | gpg2 --dearmour -o /usr/share/keyrings/sdb-keyring.gpg \
+#     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" \
+#         | tee /etc/apt/sources.list.d/sbt.list \
+#     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
+#         | tee /etc/apt/sources.list.d/sbt_old.list \
+#     && apt update && apt install sbt
 
-#
-# Add scala
-#
+ARG MILL_VERSION="0.10.9"
+RUN \
+  curl -L -o /usr/local/bin/mill https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION && \
+  chmod +x /usr/local/bin/mill && \
+  touch build.sc && \
+  mill -i resolve _ && \
+  rm build.sc
 
-FROM deps AS base
+FROM base AS run
 
-## Set frontend required for docker
-ENV DEBIAN_FRONTEND noninteractive
+RUN pip install cocotb cocotb-test click && \
+    pip cache purge
 
-RUN apt update -qq && apt install -y --no-install-recommends \
-      gnupg2 \
- && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
- && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
- && apt update -qq && apt install -y --no-install-recommends \
-   g++ \
-   llvm llvm-10 \
-   curl \
-   sbt \
-   scala \
- && apt autoclean && apt clean && apt -y autoremove
+# Add repos and install sbt 
+RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" \
+        | gpg2 --dearmour -o /usr/share/keyrings/sdb-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" \
+        | tee /etc/apt/sources.list.d/sbt.list \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
+        | tee /etc/apt/sources.list.d/sbt_old.list \
+    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN curl -L https://github.com/lihaoyi/mill/releases/download/0.7.3/0.7.3 > /usr/local/bin/mill && chmod +x /usr/local/bin/mill
-
-#
-# opnjdk-11
-#
-
-FROM base
-
-RUN apt update -qq && apt install -y --no-install-recommends \
-      openjdk-11-jdk \
-  && apt autoclean && apt clean && apt -y autoremove
+COPY --from=build-symbiyosys /opt /opt
+COPY --from=build-verilator /opt /opt
+COPY --from=build-spinal /opt /opt
+COPY --from=build-spinal /usr/local/bin/mill /opt/bin/mill
+# COPY --from=build-spinal /sbt /sbt
