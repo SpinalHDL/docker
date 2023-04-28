@@ -1,0 +1,1 @@
+This is the SpinalHDL docker image which could be a base of custom image.
