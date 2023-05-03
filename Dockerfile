@@ -103,7 +103,7 @@ RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E4
         | tee /etc/apt/sources.list.d/sbt_old.list \
     && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN git config --global --add safe.directory '*'
+RUN git config --system --add safe.directory '*'
 
 COPY --from=build-symbiyosys /opt /opt
 COPY --from=build-verilator /opt /opt
