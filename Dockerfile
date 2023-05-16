@@ -45,17 +45,17 @@ RUN mkdir solver && cd solver && \
     cp yices-smt2 $PREFIX/bin/yices-smt2 && \
     cd .. && rm -rf solver
 
-ARG boolector_version="3.2.2"
-RUN curl -L "https://github.com/Boolector/boolector/archive/refs/tags/$boolector_version.tar.gz" \
+ARG BOOLECTOR_VERSION="3.2.2"
+RUN curl -L "https://github.com/Boolector/boolector/archive/refs/tags/$BOOLECTOR_VERSION.tar.gz" \
       | tar -xz \
-    && cd boolector-$boolector_version \
+    && cd boolector-$BOOLECTOR_VERSION \
     && ./contrib/setup-lingeling.sh \
     && ./contrib/setup-btor2tools.sh \
     && ./configure.sh --prefix $PREFIX \
     && make PREFIX=$PREFIX -C build -j$(nproc) \
     && make PREFIX=$PREFIX -C build install \
     && cd .. \
-    && rm -Rf boolector-$boolector_version
+    && rm -Rf boolector-$BOOLECTOR_VERSION
 
 ARG SYMBIYOSYS_VERSION="yosys-0.28"
 RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
