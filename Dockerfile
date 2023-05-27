@@ -20,7 +20,7 @@ RUN apt-get update && \
 FROM base AS build-symbiyosys
 
 ENV PREFIX=/opt
-ARG DEPS_YOSYS="autoconf build-essential clang libffi-dev libreadline-dev pkg-config tcl-dev unzip flex bison"
+ARG DEPS_YOSYS="autoconf build-essential clang cmake libffi-dev libreadline-dev pkg-config tcl-dev unzip flex bison"
 RUN apt-get install -y --no-install-recommends $DEPS_YOSYS
 
 ARG YOSYS_VERSION="yosys-0.28"
@@ -44,6 +44,18 @@ RUN mkdir solver && cd solver && \
     cp yices $PREFIX/bin/yices && \
     cp yices-smt2 $PREFIX/bin/yices-smt2 && \
     cd .. && rm -rf solver
+
+ARG BOOLECTOR_VERSION="3.2.2"
+RUN curl -L "https://github.com/Boolector/boolector/archive/refs/tags/$BOOLECTOR_VERSION.tar.gz" \
+      | tar -xz \
+    && cd boolector-$BOOLECTOR_VERSION \
+    && ./contrib/setup-lingeling.sh \
+    && ./contrib/setup-btor2tools.sh \
+    && ./configure.sh --prefix $PREFIX \
+    && make PREFIX=$PREFIX -C build -j$(nproc) \
+    && make PREFIX=$PREFIX -C build install \
+    && cd .. \
+    && rm -Rf boolector-$BOOLECTOR_VERSION
 
 ARG SYMBIYOSYS_VERSION="yosys-0.28"
 RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
