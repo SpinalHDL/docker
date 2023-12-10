@@ -113,7 +113,7 @@ RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E4
         | tee /etc/apt/sources.list.d/sbt.list \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
         | tee /etc/apt/sources.list.d/sbt_old.list \
-    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/*
+    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/*
 
 RUN git config --system --add safe.directory '*'
 
