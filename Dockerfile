@@ -23,7 +23,7 @@ ENV PREFIX=/opt
 ARG DEPS_YOSYS="autoconf build-essential clang cmake libffi-dev libreadline-dev pkg-config tcl-dev unzip flex bison"
 RUN apt-get install -y --no-install-recommends $DEPS_YOSYS
 
-ARG YOSYS_VERSION="yosys-0.28"
+ARG YOSYS_VERSION="yosys-0.41"
 RUN git clone https://github.com/YosysHQ/yosys.git yosys && \
     cd yosys && \
     git checkout $YOSYS_VERSION && \
@@ -57,7 +57,7 @@ RUN curl -L "https://github.com/Boolector/boolector/archive/refs/tags/$BOOLECTOR
     && cd .. \
     && rm -Rf boolector-$BOOLECTOR_VERSION
 
-ARG SYMBIYOSYS_VERSION="yosys-0.28"
+ARG SYMBIYOSYS_VERSION="yosys-0.41"
 RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
     cd SymbiYosys && \
     git checkout $SYMBIYOSYS_VERSION && \
