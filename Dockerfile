@@ -24,7 +24,7 @@ ENV PREFIX=/opt
 ARG DEPS_YOSYS="autoconf build-essential clang cmake libffi-dev libreadline-dev pkg-config tcl-dev unzip flex bison gnat libz-dev"
 RUN apt-get install -y --no-install-recommends $DEPS_YOSYS
 
-ARG YOSYS_VERSION="yosys-0.28"
+ARG YOSYS_VERSION="yosys-0.41"
 RUN git clone https://github.com/YosysHQ/yosys.git yosys && \
     cd yosys && \
     git checkout $YOSYS_VERSION && \
@@ -58,7 +58,7 @@ RUN curl -L "https://github.com/Boolector/boolector/archive/refs/tags/$BOOLECTOR
     && cd .. \
     && rm -Rf boolector-$BOOLECTOR_VERSION
 
-ARG SYMBIYOSYS_VERSION="yosys-0.28"
+ARG SYMBIYOSYS_VERSION="yosys-0.41"
 RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
     cd SymbiYosys && \
     git checkout $SYMBIYOSYS_VERSION && \
@@ -134,7 +134,7 @@ RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E4
         | tee /etc/apt/sources.list.d/sbt.list \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
         | tee /etc/apt/sources.list.d/sbt_old.list \
-    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/*
+    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/*
 
 RUN git config --system --add safe.directory '*'
 
