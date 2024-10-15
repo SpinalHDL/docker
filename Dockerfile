@@ -66,7 +66,7 @@ RUN git clone https://github.com/YosysHQ/sby.git SymbiYosys && \
     cd .. && \
     rm -Rf SymbiYosys
 
-ARG GHDL_VERSION="3b05281"
+ARG GHDL_VERSION="f5b887f"
 RUN git clone https://github.com/ghdl/ghdl ghdl && \
     cd ghdl && \
     git checkout $GHDL_VERSION && \
