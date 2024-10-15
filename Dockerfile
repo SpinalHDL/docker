@@ -124,7 +124,7 @@ RUN \
 
 FROM base AS run
 
-RUN pip install cocotb cocotb-test click && \
+RUN pip install cocotb==1.8.1 cocotb-test click && \
     pip cache purge
 
 # Add repos and install sbt 
