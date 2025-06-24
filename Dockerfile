@@ -92,7 +92,7 @@ ENV PREFIX=/opt
 ARG DEPS_VERILATOR="perl make autoconf g++ flex bison ccache libgoogle-perftools-dev numactl perl-doc libfl2 libfl-dev zlib1g zlib1g-dev"
 RUN apt-get install -y --no-install-recommends $DEPS_VERILATOR
 
-ARG VERILATOR_VERSION="v4.228"
+ARG VERILATOR_VERSION="v5.022"
 RUN git clone https://github.com/verilator/verilator verilator && \
     cd verilator && \
     git checkout $VERILATOR_VERSION && \
@@ -104,15 +104,6 @@ RUN git clone https://github.com/verilator/verilator verilator && \
     rm -Rf verilator
 
 FROM base AS build-spinal
-
-# # Add repos and install sbt 
-# RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" \
-#         | gpg2 --dearmour -o /usr/share/keyrings/sdb-keyring.gpg \
-#     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" \
-#         | tee /etc/apt/sources.list.d/sbt.list \
-#     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
-#         | tee /etc/apt/sources.list.d/sbt_old.list \
-#     && apt update && apt install sbt
 
 ARG MILL_VERSION="0.10.9"
 RUN \
@@ -127,19 +118,9 @@ FROM base AS run
 RUN pip install cocotb==1.8.1 cocotb-test click && \
     pip cache purge
 
-# Add repos and install sbt 
-RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" \
-        | gpg2 --dearmour -o /usr/share/keyrings/sdb-keyring.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" \
-        | tee /etc/apt/sources.list.d/sbt.list \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/sdb-keyring.gpg] https://repo.scala-sbt.org/scalasbt/debian /" \
-        | tee /etc/apt/sources.list.d/sbt_old.list \
-    && apt update && apt install sbt && apt clean && rm -rf /var/lib/apt/lists/* /var/cache/debconf/* /var/log/* /tmp/*
-
 RUN git config --system --add safe.directory '*'
 
 COPY --from=build-symbiyosys /opt /opt
 COPY --from=build-verilator /opt /opt
 COPY --from=build-spinal /opt /opt
 COPY --from=build-spinal /usr/local/bin/mill /opt/bin/mill
-# COPY --from=build-spinal /sbt /sbt
