@@ -114,13 +114,16 @@ FROM base AS build-spinal
 #         | tee /etc/apt/sources.list.d/sbt_old.list \
 #     && apt update && apt install sbt
 
-ARG MILL_VERSION="0.10.9"
+ARG MILL_VERSION="1.1.0"
 RUN \
-  curl -L -o /usr/local/bin/mill https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION && \
+  curl -L -o /usr/local/bin/mill https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/$MILL_VERSION/mill-dist-$MILL_VERSION-mill.sh && \
   chmod +x /usr/local/bin/mill && \
-  touch build.sc && \
-  mill -i resolve _ && \
-  rm build.sc
+  mkdir -p /tmp/mill-build && \
+    cd /tmp/mill-build && \
+    touch build.sc && \
+    mill -i resolve _ && \
+    cd / && \
+    rm -rf /tmp/mill-build
 
 FROM base AS run
 
